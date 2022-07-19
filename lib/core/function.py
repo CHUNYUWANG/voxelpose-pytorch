@@ -55,19 +55,11 @@ def train_3d(config, model, optimizer, loader, epoch, output_dir, writer_dict, d
         losses_cord.update(loss_cord.item())
         loss = loss_2d + loss_3d + loss_cord
         losses.update(loss.item())
+        
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-        if loss_cord > 0:
-            optimizer.zero_grad()
-            (loss_2d + loss_cord).backward()
-            optimizer.step()
-
-        if accu_loss_3d > 0 and (i + 1) % accumulation_steps == 0:
-            optimizer.zero_grad()
-            accu_loss_3d.backward()
-            optimizer.step()
-            accu_loss_3d = 0.0
-        else:
-            accu_loss_3d += loss_3d / accumulation_steps
 
         batch_time.update(time.time() - end)
         end = time.time()
